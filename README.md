@@ -128,8 +128,9 @@ Capas principales:
 Este MVP permitirá validar la idea y sentar las bases para futuras mejoras.
 ---
 
-### 7️⃣ Diagrama de Arquitectura
+## 7️⃣ Diagrama de Arquitectura
 
+```mermaid
 graph TD
     subgraph Frontend[Frontend - Capa de Presentacion]
         A[React TypeScript] --> B[TailwindCSS y shadcn ui]
