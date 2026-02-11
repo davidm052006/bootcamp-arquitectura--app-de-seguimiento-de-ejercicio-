@@ -130,18 +130,17 @@ Este MVP permitirá validar la idea y sentar las bases para futuras mejoras.
 
 ### 7️⃣ Diagrama de Arquitectura
 
-```mermaid
 graph TD
-    subgraph Frontend[Frontend - Capa de Presentación]
-        A[React + TypeScript] --> B[TailwindCSS + shadcn/ui]
-        A --> C[Framer Motion (Animaciones)]
-        A --> D[React Query + Context API]
+    subgraph Frontend[Frontend - Capa de Presentacion]
+        A[React TypeScript] --> B[TailwindCSS y shadcn ui]
+        A --> C[Framer Motion Animaciones]
+        A --> D[React Query y Context API]
     end
 
-    subgraph Backend[Backend - Capa API y Lógica]
-        E[Spring Boot (Java POO)] --> F[Controladores REST]
-        E --> G[Spring Security (JWT)]
-        E --> H[Servicios (Lógica de Negocio)]
+    subgraph Backend[Backend - Capa API y Logica]
+        E[Spring Boot Java] --> F[Controladores REST]
+        E --> G[Spring Security JWT]
+        E --> H[Servicios Logica de Negocio]
         H --> I[Spring Data JPA]
     end
 
@@ -149,5 +148,5 @@ graph TD
         I --> J[PostgreSQL]
     end
 
-    Frontend --> |API REST + JWT| Backend
-    Backend --> |JPA/Hibernate| Datos
+    Frontend -->|API REST con JWT| Backend
+    Backend -->|JPA Hibernate| Datos
