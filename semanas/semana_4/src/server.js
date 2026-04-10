@@ -1,20 +1,24 @@
 import express from 'express';
 
-// Importar repositorios
-import { AuthorRepository } from './domain/repositories/AuthorRepository.js';
-import { BookRepository } from './domain/repositories/BookRepository.js';
+import { ApiError } from './utils/api-error.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { setupSwagger } from './swagger.js';
 
-// Importar servicios
-import { AuthorService } from './domain/services/AuthorService.js';
-import { BookService } from './domain/services/BookService.js';
+// Repositorios
+import { UserRepository } from './domain/repositories/UserRepository.js';
+import { RoutineRepository } from './domain/repositories/RoutineRepository.js';
 
-// Importar controladores
-import { AuthorController } from './api/controllers/AuthorController.js';
-import { BookController } from './api/controllers/BookController.js';
+// Servicios
+import { UserService } from './domain/services/UserService.js';
+import { RoutineService } from './domain/services/RoutineService.js';
 
-// Importar rutas
-import { createAuthorRoutes } from './api/routes/authorRoutes.js';
-import { createBookRoutes } from './api/routes/bookRoutes.js';
+// Controladores
+import { UserController } from './api/controllers/UserController.js';
+import { RoutineController } from './api/controllers/RoutineController.js';
+
+// Rutas
+import { createUserRoutes } from './api/routes/userRoutes.js';
+import { createRoutineRoutes } from './api/routes/routineRoutes.js';
 
 /**
  * SERVIDOR EXPRESS - PUNTO DE ENTRADA
@@ -41,30 +45,31 @@ app.use((req, res, next) => {
 });
 
 // 3. Inicializar dependencias (Inyección de Dependencias)
-// Repositorios (capa de datos)
-const authorRepository = new AuthorRepository();
-const bookRepository = new BookRepository();
+const userRepository = new UserRepository();
+const routineRepository = new RoutineRepository();
 
-// Servicios (lógica de negocio)
-const authorService = new AuthorService(authorRepository);
-const bookService = new BookService(bookRepository, authorRepository);
+const userService = new UserService(userRepository);
+const routineService = new RoutineService(routineRepository, userRepository);
 
-// Controladores (capa HTTP)
-const authorController = new AuthorController(authorService);
-const bookController = new BookController(bookService);
+const userController = new UserController(userService, routineService);
+const routineController = new RoutineController(routineService);
 
-// 4. Registrar rutas
-app.use('/api/authors', createAuthorRoutes(authorController));
-app.use('/api/books', createBookRoutes(bookController));
+// 4. Swagger UI
+setupSwagger(app);
+
+// 5. Registrar rutas
+app.use('/api/v1/users', createUserRoutes(userController));
+app.use('/api/v1/routines', createRoutineRoutes(routineController));
 
 // Ruta raíz (bienvenida)
 app.get('/', (req, res) => {
   res.json({
-    message: 'API de Librería - Semana 04',
+    message: 'API de Seguimiento de Ejercicios - Semana 04',
     version: '1.0.0',
     endpoints: {
-      authors: '/api/authors',
-      books: '/api/books'
+      users: '/api/v1/users',
+      routines: '/api/v1/routines',
+      docs: '/api-docs',
     }
   });
 });
@@ -74,13 +79,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date() });
 });
 
-// Middleware para rutas no encontradas (404)
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Ruta no encontrada'
-  });
+// 404 -> error middleware centralizado
+app.use((req, res, next) => {
+  next(new ApiError('Ruta no encontrada', 404));
 });
+
+app.use(errorHandler);
 
 // 5. Iniciar el servidor
 app.listen(PORT, () => {
@@ -88,10 +92,11 @@ app.listen(PORT, () => {
   console.log('🚀 Servidor iniciado exitosamente');
   console.log(`📍 URL: http://localhost:${PORT}`);
   console.log(`📚 Endpoints disponibles:`);
-  console.log(`   - GET    http://localhost:${PORT}/api/authors`);
-  console.log(`   - POST   http://localhost:${PORT}/api/authors`);
-  console.log(`   - GET    http://localhost:${PORT}/api/books`);
-  console.log(`   - POST   http://localhost:${PORT}/api/books`);
+  console.log(`   - GET    http://localhost:${PORT}/api/v1/users`);
+  console.log(`   - POST   http://localhost:${PORT}/api/v1/users`);
+  console.log(`   - GET    http://localhost:${PORT}/api/v1/routines`);
+  console.log(`   - POST   http://localhost:${PORT}/api/v1/routines`);
+  console.log(`   - Swagger http://localhost:${PORT}/api-docs`);
   console.log('=================================');
 });
 

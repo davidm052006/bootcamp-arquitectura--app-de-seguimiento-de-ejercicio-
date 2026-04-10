@@ -1,0 +1,19 @@
+{
+  "name": "fitwell-api-semana5",
+  "version": "1.0.0",
+  "description": "API REST FitWell con patrones de diseño - Semana 05",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": ["rest", "api", "express", "fitwell", "patrones", "design-patterns"],
+  "author": "David",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "swagger-ui-express": "^5.0.0",
+    "yaml": "^2.3.4"
+  }
+}

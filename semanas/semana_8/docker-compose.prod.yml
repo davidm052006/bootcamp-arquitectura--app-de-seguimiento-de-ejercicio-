@@ -1,0 +1,70 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# DOCKER COMPOSE — Entorno de PRODUCCIÓN
+#
+# Diferencias vs desarrollo:
+#   - Sin pgAdmin (no exponer herramientas de admin en producción)
+#   - Sin hot-reload (sin volúmenes de código)
+#   - 2 réplicas de la API (alta disponibilidad)
+#   - Reinicio automático siempre
+#   - Sin exposición del puerto de BD al host
+#
+# Comando: docker compose -f docker-compose.prod.yml up --build -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always # siempre reiniciar en producción
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # Sin "ports" — la BD NO se expone al host en producción
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: .
+    command: node migrations/migrate.js
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: .
+    restart: always
+    deploy:
+      replicas: 2 # 2 instancias de la API en producción
+      resources:
+        limits:
+          memory: 256M # límite de memoria por réplica
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      USE_POSTGRES: "true"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      APP_VERSION: ${APP_VERSION:-4.0.0}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  postgres_data:

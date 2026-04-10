@@ -1,0 +1,24 @@
+{
+  "name": "fitwell-security-semana8",
+  "version": "1.0.0",
+  "description": "FitWell — Seguridad API (JWT + RBAC + OWASP) - Semana 08",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/security/security.test.js"
+  },
+  "author": "David",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "zod": "^3.22.4"
+  }
+}

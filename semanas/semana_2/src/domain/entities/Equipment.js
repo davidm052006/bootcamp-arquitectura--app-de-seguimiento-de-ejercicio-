@@ -1,77 +1,54 @@
-// Equipment.js - Entidad de Equipamiento
-// Representa un equipo de ejercicio en FitWell
+/**
+ * Entidad Equipment - Representa un equipo de entrenamiento
+ * 
+ * PRINCIPIO SOLID APLICADO: SRP (Single Responsibility Principle)
+ * 
+ * Responsabilidad ÚNICA: Representar un equipo de entrenamiento con sus datos.
+ * 
+ * Esta es una entidad simple que solo contiene datos y lógica mínima.
+ */
 
 export class Equipment {
-  // Atributos privados (solo accesibles dentro de la clase)
-  #id;
-  #nombre;
-  #tipo;
-  #disponible;
+  constructor({
+    id,
+    nombre,
+    tipo,        // 'mancuernas', 'colchoneta', 'cuerda', 'saco_boxeo', 'barra', 'bandas_elasticas', 'peso_corporal'
+    descripcion = '',
+    disponible = true
+  }) {
+    this.id = id;
+    this.nombre = nombre;
+    this.tipo = tipo;
+    this.descripcion = descripcion;
+    this.disponible = disponible;
+  }
 
   /**
-   * Constructor: se ejecuta cuando haces "new Equipment(...)"
-   * @param {string} id - Identificador único del equipo
-   * @param {string} nombre - Nombre del equipo (ej: "Mancuernas")
-   * @param {string} tipo - Tipo de equipo (ej: "PESO_LIBRE", "CARDIO", "ACCESORIO")
-   * @param {boolean} disponible - Si está disponible para usar (default: true)
+   * Marca el equipo como disponible
    */
-  constructor(id, nombre, tipo, disponible = true) {
-    this.#id = id;
-    this.#nombre = nombre;
-    this.#tipo = tipo;
-    this.#disponible = disponible;
+  marcarDisponible() {
+    this.disponible = true;
   }
 
-  // ========== GETTERS (para leer atributos privados) ==========
-  
-  getId() {
-    return this.#id;
-  }
-
-  getNombre() {
-    return this.#nombre;
-  }
-
-  getTipo() {
-    return this.#tipo;
-  }
-
-  isDisponible() {
-    return this.#disponible;
-  }
-
-  // ========== MÉTODOS DE NEGOCIO ==========
-  
   /**
-   * Marca el equipo como no disponible (ej: está en uso o roto)
+   * Marca el equipo como no disponible
    */
-  marcarComoNoDisponible() {
-    this.#disponible = false;
+  marcarNoDisponible() {
+    this.disponible = false;
   }
 
   /**
-   * Marca el equipo como disponible nuevamente
-   */
-  marcarComoDisponible() {
-    this.#disponible = true;
-  }
-
-  /**
-   * Método para mostrar información del equipo (útil para debugging)
-   */
-  toString() {
-    return `Equipment { id: ${this.#id}, nombre: ${this.#nombre}, tipo: ${this.#tipo}, disponible: ${this.#disponible} }`;
-  }
-
-  /**
-   * Convierte el equipo a un objeto simple (útil para JSON)
+   * Convierte el equipo a un objeto simple
+   * 
+   * @returns {Object} Representación simple del equipo
    */
   toJSON() {
     return {
-      id: this.#id,
-      nombre: this.#nombre,
-      tipo: this.#tipo,
-      disponible: this.#disponible
+      id: this.id,
+      nombre: this.nombre,
+      tipo: this.tipo,
+      descripcion: this.descripcion,
+      disponible: this.disponible
     };
   }
 }

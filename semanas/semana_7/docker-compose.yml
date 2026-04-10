@@ -1,0 +1,94 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# DOCKER COMPOSE — Entorno de DESARROLLO
+#
+# Incluye: API + PostgreSQL + pgAdmin + servicio de migraciones
+# Comando: docker compose up --build
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Base de datos PostgreSQL ────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine # imagen oficial, versión Alpine (pequeña)
+    container_name: fitwell_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fitwell}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitwell123}
+      POSTGRES_DB: ${POSTGRES_DB:-fitwell_dev}
+    ports:
+      - "5432:5432" # expone la BD al host (útil para conectar con DBeaver)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # datos persisten entre reinicios
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-fitwell} -d ${POSTGRES_DB:-fitwell_dev}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Migraciones ─────────────────────────────────────────────────────────────
+  # Se ejecuta UNA VEZ al arrancar, espera que la BD esté lista, luego termina
+  migrate:
+    build: .
+    container_name: fitwell_migrate
+    command: node migrations/migrate.js
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-fitwell}:${POSTGRES_PASSWORD:-fitwell123}@db:5432/${POSTGRES_DB:-fitwell_dev}
+    depends_on:
+      db:
+        condition: service_healthy # espera que la BD esté lista antes de migrar
+    restart: "no" # no reiniciar — solo corre una vez
+
+  # ── API ─────────────────────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: fitwell_api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      USE_POSTGRES: "true"
+      DATABASE_URL: postgres://${POSTGRES_USER:-fitwell}:${POSTGRES_PASSWORD:-fitwell123}@db:5432/${POSTGRES_DB:-fitwell_dev}
+      APP_VERSION: "4.0.0"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully # espera que las migraciones terminen
+    # En desarrollo: montar el código fuente para ver cambios sin rebuild
+    volumes:
+      - ./src:/app/src:ro
+      - ./migrations:/app/migrations:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── pgAdmin — Interfaz visual para PostgreSQL ────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fitwell_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@fitwell.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: "False" # modo desktop (sin login)
+    ports:
+      - "5050:80" # abrir http://localhost:5050
+    depends_on:
+      - db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+# ── Volúmenes persistentes ───────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  pgadmin_data:

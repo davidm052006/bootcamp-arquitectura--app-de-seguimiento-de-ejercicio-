@@ -1,16 +1,14 @@
 {
   "name": "fitwell-semana2-solid",
   "version": "1.0.0",
-  "description": "Implementación de principios SOLID en el dominio FitWell - Módulo de Equipamiento y Rutinas",
+  "description": "Aplicación de principios SOLID en el dominio FitWell",
   "type": "module",
   "main": "src/domain/index.js",
+  "scripts": {
+    "start": "node src/domain/index.js",
+    "test": "node tests/AuthService.test.js"
+  },
+  "keywords": ["solid", "fitwell", "arquitectura", "poo"],
   "author": "David",
-  "license": "MIT",
-  "keywords": [
-    "solid",
-    "arquitectura",
-    "fitwell",
-    "poo",
-    "javascript"
-  ]
+  "license": "ISC"
 }

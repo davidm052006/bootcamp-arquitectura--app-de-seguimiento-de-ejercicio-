@@ -1,0 +1,18 @@
+{
+  "name": "fitwell-cloud-semana7",
+  "version": "1.0.0",
+  "description": "FitWell — Cloud Native con Docker + 12-Factor - Semana 07",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/domain.test.js tests/application.test.js"
+  },
+  "author": "David",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  }
+}

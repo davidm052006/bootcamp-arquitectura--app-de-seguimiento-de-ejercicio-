@@ -1,0 +1,120 @@
+### Base URL
+@baseUrl = http://localhost:3000/api/v1
+
+### Health
+GET http://localhost:3000/health
+
+### ----------------------------
+### USERS (CRUD)
+### ----------------------------
+
+### Crear usuario
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "nombre": "Agente 1",
+  "email": "agente1@mail.com"
+}
+
+### Error 409: email duplicado
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "nombre": "Otro",
+  "email": "agente1@mail.com"
+}
+
+### Listar usuarios (paginación)
+GET {{baseUrl}}/users?page=1&limit=10
+
+### Obtener usuario (REEMPLAZA {{userId}} con el id real)
+GET {{baseUrl}}/users/{{userId}}
+
+### Actualizar usuario (PUT)
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "nombre": "Agente 1 - actualizado",
+  "email": "agente1_new@mail.com"
+}
+
+### Eliminar usuario (DELETE)
+DELETE {{baseUrl}}/users/{{userId}}
+
+### ----------------------------
+### ROUTINES (CRUD + regla activa)
+### ----------------------------
+
+### Crear rutina INACTIVA
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "nombre": "Rutina A",
+  "descripcion": "Pierna + core",
+  "activa": false
+}
+
+### Crear rutina ACTIVA (esto desactiva las demás del usuario)
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "nombre": "Rutina B",
+  "descripcion": "Full body",
+  "activa": true
+}
+
+### Listar rutinas del usuario (subrecurso)
+GET {{baseUrl}}/users/{{userId}}/routines?page=1&limit=10
+
+### Listar rutinas con filtros (active=true)
+GET {{baseUrl}}/routines?userId={{userId}}&active=true&page=1&limit=10
+
+### Obtener rutina por id
+GET {{baseUrl}}/routines/{{routineId}}
+
+### Actualizar rutina (PUT) - dejarla activa (regla de 1 activa)
+PUT {{baseUrl}}/routines/{{routineId}}
+Content-Type: application/json
+
+{
+  "nombre": "Rutina (re-activada)",
+  "descripcion": "Actualización completa",
+  "activa": true
+}
+
+### PATCH - activar rutina
+PATCH {{baseUrl}}/routines/{{routineId}}
+Content-Type: application/json
+
+{
+  "activa": true
+}
+
+### Eliminar rutina
+DELETE {{baseUrl}}/routines/{{routineId}}
+
+### ----------------------------
+### ERROR CASES
+### ----------------------------
+
+### Error: crear rutina con usuario inexistente
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": 999999,
+  "nombre": "Rutina inválida",
+  "descripcion": "No debería crearse",
+  "activa": true
+}
+
+### Error: obtener rutina inexistente
+GET {{baseUrl}}/routines/999999
+

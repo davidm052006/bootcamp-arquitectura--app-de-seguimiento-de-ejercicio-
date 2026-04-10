@@ -1,0 +1,106 @@
+### Base URL
+@baseUrl = http://localhost:3000/api/v1
+
+### Health
+GET http://localhost:3000/health
+
+### ----------------------------
+### USERS
+### ----------------------------
+
+### Crear usuario
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "nombre": "David",
+  "email": "david@fitwell.com"
+}
+
+### Listar usuarios
+GET {{baseUrl}}/users?page=1&limit=10
+
+### Obtener usuario
+GET {{baseUrl}}/users/1
+
+### Actualizar usuario
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+  "nombre": "David Actualizado"
+}
+
+### ----------------------------
+### ROUTINES — Factory Method en acción
+### ----------------------------
+
+### Crear rutina BÁSICA (tipo por defecto)
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "nombre": "Rutina Básica",
+  "activa": false,
+  "tipo": "basica"
+}
+
+### Crear rutina AVANZADA — Factory crea con descripción diferente
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "nombre": "Rutina Avanzada",
+  "activa": false,
+  "tipo": "avanzada"
+}
+
+### Crear rutina RECUPERACIÓN — Factory la crea activa por defecto
+### Observer emitirá routine.created → AuditObserver + NotificationObserver
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "nombre": "Recuperación Activa",
+  "tipo": "recuperacion"
+}
+
+### Activar rutina — Observer emitirá routine.activated
+PATCH {{baseUrl}}/routines/1
+Content-Type: application/json
+
+{
+  "activa": true
+}
+
+### Listar rutinas con filtro (Strategy pagina el resultado)
+GET {{baseUrl}}/routines?userId=1&active=true&page=1&limit=5
+
+### Eliminar rutina — Observer emitirá routine.deleted
+DELETE {{baseUrl}}/routines/2
+
+### ----------------------------
+### ERROR CASES
+### ----------------------------
+
+### Error 404: usuario inexistente
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "userId": 999,
+  "nombre": "No debería crearse",
+  "activa": false
+}
+
+### Error 409: email duplicado
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "nombre": "Otro",
+  "email": "david@fitwell.com"
+}

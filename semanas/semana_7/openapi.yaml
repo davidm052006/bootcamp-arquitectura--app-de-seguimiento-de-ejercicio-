@@ -1,0 +1,395 @@
+openapi: 3.0.3
+info:
+  title: API Seguimiento de Ejercicios - Semana 04
+  version: 1.0.0
+  description: >
+    API REST para gestionar usuarios y rutinas. Regla de negocio:
+    un usuario puede tener solo una rutina activa a la vez.
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: routines
+    description: Gestión de rutinas (recurso principal)
+  - name: users
+    description: Gestión de usuarios (recurso secundario)
+
+paths:
+  /api/v1/users:
+    get:
+      tags: [users]
+      summary: Listar usuarios con paginación
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserListResponse' }
+        '500': { $ref: '#/components/responses/Error500' }
+    post:
+      tags: [users]
+      summary: Crear un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserCreateRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserCreateResponse' }
+        '400': { $ref: '#/components/responses/Error400' }
+        '409': { $ref: '#/components/responses/Error409' }
+        '500': { $ref: '#/components/responses/Error500' }
+
+  /api/v1/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/UserIdPath'
+    get:
+      tags: [users]
+      summary: Obtener usuario por id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '500': { $ref: '#/components/responses/Error500' }
+    put:
+      tags: [users]
+      summary: Actualizar usuario (PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdateRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '400': { $ref: '#/components/responses/Error400' }
+    delete:
+      tags: [users]
+      summary: Eliminar usuario
+      responses:
+        '204':
+          description: No Content
+        '404': { $ref: '#/components/responses/Error404' }
+
+  /api/v1/users/{id}/routines:
+    parameters:
+      - $ref: '#/components/parameters/UserIdPath'
+      - $ref: '#/components/parameters/PageParam'
+      - $ref: '#/components/parameters/LimitParam'
+    get:
+      tags: [users]
+      summary: Listar rutinas de un usuario con paginación
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoutineListResponse' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '500': { $ref: '#/components/responses/Error500' }
+
+  /api/v1/routines:
+    get:
+      tags: [routines]
+      summary: Listar rutinas con filtros y paginación
+      parameters:
+        - name: userId
+          in: query
+          description: Filtrar por id del usuario
+          schema: { type: integer, format: int32, example: 1 }
+          required: false
+        - name: active
+          in: query
+          description: Filtrar por rutina activa
+          schema: { type: boolean, example: true }
+          required: false
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoutineListResponse' }
+        '400': { $ref: '#/components/responses/Error400' }
+        '500': { $ref: '#/components/responses/Error500' }
+    post:
+      tags: [routines]
+      summary: Crear rutina
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RoutineCreateRequest' }
+          examples:
+            createActive:
+              summary: Crear una rutina activa (desactiva las demás)
+              value:
+                userId: 1
+                nombre: Rutina A
+                descripcion: Pierna + core
+                activa: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoutineResponse' }
+        '400': { $ref: '#/components/responses/Error400' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '500': { $ref: '#/components/responses/Error500' }
+
+  /api/v1/routines/{id}:
+    parameters:
+      - $ref: '#/components/parameters/RoutineIdPath'
+    get:
+      tags: [routines]
+      summary: Obtener rutina por id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoutineResponse' }
+        '404': { $ref: '#/components/responses/Error404' }
+    put:
+      tags: [routines]
+      summary: Actualizar rutina (PUT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RoutineUpdateRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoutineResponse' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '400': { $ref: '#/components/responses/Error400' }
+    patch:
+      tags: [routines]
+      summary: Actualización parcial (PATCH)
+      description: >
+        Útil para activar una rutina pasando `{ "activa": true }`.
+        Si se activa, se desactivan las demás rutinas del usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RoutinePatchRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoutineResponse' }
+        '404': { $ref: '#/components/responses/Error404' }
+        '400': { $ref: '#/components/responses/Error400' }
+    delete:
+      tags: [routines]
+      summary: Eliminar rutina
+      responses:
+        '204':
+          description: No Content
+        '404': { $ref: '#/components/responses/Error404' }
+
+components:
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Número de página (desde 1)
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        example: 1
+    LimitParam:
+      name: limit
+      in: query
+      description: Tamaño de página
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        example: 10
+    UserIdPath:
+      name: id
+      in: path
+      required: true
+      description: id del usuario
+      schema:
+        type: integer
+        format: int32
+        example: 1
+    RoutineIdPath:
+      name: id
+      in: path
+      required: true
+      description: id de la rutina
+      schema:
+        type: integer
+        format: int32
+        example: 1
+
+  schemas:
+    Timestamp:
+      type: string
+      format: date-time
+    User:
+      type: object
+      properties:
+        id: { type: integer, format: int32 }
+        nombre: { type: string }
+        email: { type: string, nullable: true }
+        fechaCreacion: { $ref: '#/components/schemas/Timestamp' }
+        ultimaActualizacion: { $ref: '#/components/schemas/Timestamp' }
+    Routine:
+      type: object
+      properties:
+        id: { type: integer, format: int32 }
+        userId: { type: integer, format: int32 }
+        nombre: { type: string }
+        descripcion: { type: string, default: '' }
+        activa: { type: boolean }
+        fechaCreacion: { $ref: '#/components/schemas/Timestamp' }
+        ultimaActualizacion: { $ref: '#/components/schemas/Timestamp' }
+
+    UserCreateRequest:
+      type: object
+      required: [nombre]
+      properties:
+        nombre: { type: string, example: "Agente 1" }
+        email: { type: string, nullable: true, example: "agente1@mail.com" }
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        nombre: { type: string, example: "Agente 1 - actualizado" }
+        email: { type: string, nullable: true, example: "nuevo@mail.com" }
+
+    UserResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        timestamp: { $ref: '#/components/schemas/Timestamp' }
+        data: { $ref: '#/components/schemas/User' }
+
+    UserCreateResponse:
+      allOf:
+        - { $ref: '#/components/schemas/UserResponse' }
+
+    RoutineCreateRequest:
+      type: object
+      required: [userId, nombre, activa]
+      properties:
+        userId: { type: integer, format: int32, example: 1 }
+        nombre: { type: string, example: "Rutina A" }
+        descripcion: { type: string, example: "Pierna + core" }
+        activa: { type: boolean, example: true }
+
+    RoutineUpdateRequest:
+      type: object
+      properties:
+        nombre: { type: string, example: "Rutina A - cambiada" }
+        descripcion: { type: string, example: "Full body" }
+        activa: { type: boolean, example: false }
+
+    RoutinePatchRequest:
+      type: object
+      properties:
+        nombre: { type: string, example: "Rutina B" }
+        descripcion: { type: string, example: "Cardio" }
+        activa: { type: boolean, example: true }
+
+    PaginationMeta:
+      type: object
+      properties:
+        pagination:
+          type: object
+          properties:
+            page: { type: integer, format: int32 }
+            limit: { type: integer, format: int32 }
+            total: { type: integer, format: int32 }
+            totalPages: { type: integer, format: int32 }
+            hasNext: { type: boolean }
+            hasPrev: { type: boolean }
+
+    RoutineResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        timestamp: { $ref: '#/components/schemas/Timestamp' }
+        data: { $ref: '#/components/schemas/Routine' }
+
+    RoutineListResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        timestamp: { $ref: '#/components/schemas/Timestamp' }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Routine' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    UserListResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        timestamp: { $ref: '#/components/schemas/Timestamp' }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    ErrorResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        timestamp: { $ref: '#/components/schemas/Timestamp' }
+        error:
+          type: object
+          properties:
+            message: { type: string }
+            details: { type: object, nullable: true }
+            statusCode: { type: integer, format: int32 }
+
+  responses:
+    Error400:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Error404:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Error500:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Error409:
+      description: Conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+

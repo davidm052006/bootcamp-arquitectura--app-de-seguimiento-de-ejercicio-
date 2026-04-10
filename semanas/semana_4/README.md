@@ -1,13 +1,13 @@
 # Semana 04: Diseño de Componentes y Comunicación
 
-## 📚 Proyecto: API REST para Sistema de Librería
+## 🏋️ Proyecto: API REST para Sistema de Seguimiento de Ejercicios
 
-Este proyecto implementa una API RESTful para gestionar una librería online.
+Este proyecto implementa una API RESTful para gestionar un sistema de seguimiento de ejercicios.
 
-### Dominio: Librería
-- **Entidades**: Libros, Autores, Categorías
-- **Operaciones**: CRUD completo para cada entidad
-- **Relaciones**: Un libro tiene un autor, un autor puede tener múltiples libros
+### Dominio: Seguimiento de Ejercicios
+- **Entidad principal (recurso principal)**: Rutinas
+- **Entidad secundaria**: Usuarios
+- **Regla de negocio clave**: Un usuario puede tener solo una rutina activa a la vez (si activas una, se desactivan las demás del mismo usuario).
 
 ### Tecnologías
 - Node.js v22
@@ -18,6 +18,11 @@ Este proyecto implementa una API RESTful para gestionar una librería online.
 ### Estructura del Proyecto
 ```
 semana_4/
+├── openapi.yaml         # Especificación OpenAPI
+├── docs/
+│   └── diagrama-componentes.svg
+├── tests/
+│   └── api.http
 ├── src/
 │   ├── domain/           # Lógica de negocio
 │   │   ├── entities/     # Clases de dominio
@@ -28,8 +33,6 @@ semana_4/
 │   │   ├── controllers/  # Controladores HTTP
 │   │   └── middlewares/  # Middlewares (validación, errores)
 │   └── server.js         # Punto de entrada del servidor
-├── docs/
-│   └── openapi.yaml      # Especificación OpenAPI
 ├── package.json
 └── README.md
 ```
@@ -49,23 +52,30 @@ El servidor estará disponible en: http://localhost:3000
 
 ### Endpoints Disponibles
 
-#### Libros
-- `GET /api/books` - Listar todos los libros
-- `GET /api/books/:id` - Obtener un libro por ID
-- `POST /api/books` - Crear un nuevo libro
-- `PUT /api/books/:id` - Actualizar un libro
-- `DELETE /api/books/:id` - Eliminar un libro
+#### Rutinas (Recurso principal)
+- `GET /api/v1/routines` - Listar rutinas (con filtros y paginación)
+- `GET /api/v1/routines/:id` - Obtener rutina por ID
+- `POST /api/v1/routines` - Crear rutina
+- `PUT /api/v1/routines/:id` - Actualizar rutina
+- `PATCH /api/v1/routines/:id` - Actualización parcial (ej: activar)
+- `DELETE /api/v1/routines/:id` - Eliminar rutina (204)
 
-#### Autores
-- `GET /api/authors` - Listar todos los autores
-- `GET /api/authors/:id` - Obtener un autor por ID
-- `POST /api/authors` - Crear un nuevo autor
-- `PUT /api/authors/:id` - Actualizar un autor
-- `DELETE /api/authors/:id` - Eliminar un autor
+#### Usuarios (Recurso secundario)
+- `GET /api/v1/users` - Listar usuarios (paginación)
+- `GET /api/v1/users/:id` - Obtener usuario
+- `POST /api/v1/users` - Crear usuario (409 si email duplicado)
+- `PUT /api/v1/users/:id` - Actualizar usuario
+- `DELETE /api/v1/users/:id` - Eliminar usuario (204)
+- `GET /api/v1/users/:id/routines` - Ver rutinas de un usuario (paginación)
 
 ### Documentación API
 Una vez iniciado el servidor, visita:
 - Swagger UI: http://localhost:3000/api-docs
+
+### Persistencia (¿necesito base de datos?)
+Por ahora **NO**. Los datos se almacenan **en memoria** (Map) en los repositorios.
+- ✅ Puedes crear/consultar/actualizar/eliminar por API sin DB.
+- ⚠️ Al reiniciar el servidor, se pierden los datos.
 
 ## 🎯 Conceptos Aplicados
 
@@ -75,9 +85,9 @@ Una vez iniciado el servidor, visita:
 - **Repositories**: Persistencia de datos
 
 ### 2. API RESTful
-- Recursos bien definidos (`/books`, `/authors`)
+- Recursos bien definidos (`/api/v1/routines`, `/api/v1/users`)
 - Verbos HTTP correctos (GET, POST, PUT, DELETE)
-- Códigos de estado apropiados (200, 201, 404, 500)
+- Códigos de estado apropiados (200, 201, 204, 400, 404, 409, 500)
 - Respuestas en JSON
 
 ### 3. Comunicación Síncrona
