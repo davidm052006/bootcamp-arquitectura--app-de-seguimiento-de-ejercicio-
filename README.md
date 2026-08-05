@@ -1,153 +1,106 @@
-# FitWell – Proyecto Bootcamp
+# FitWell API — Arquitectura de Software progresiva
 
-**Autor:** David
-**Bootcamp:** Arquitectura de Software – SENA
-**Fecha:** Febrero 2026
+[🇬🇧 English version](README.en.md)
 
----
+Backend de **FitWell**, una app de entrenamiento en casa, construido en 8
+semanas donde cada entrega aplica un nivel más de madurez arquitectónica
+sobre el mismo dominio: de un CRUD simple a una API con arquitectura
+hexagonal, Docker y seguridad JWT/RBAC.
 
-## 1️⃣ Problema que Resuelve
+> El planteamiento inicial (semana 1) contemplaba Spring Boot + React;
+> el proyecto evolucionó hacia **Node.js/Express**, que es lo que
+> finalmente se construyó y lo que documenta este README.
 
-Muchas personas desean **entrenar** y mejorar su **alimentación** desde casa, pero se frustran porque las rutinas y planes disponibles no consideran el **equipo real** que poseen (mancuernas, colchoneta, cuerda, saco de boxeo, barra, bandas elásticas o solo peso corporal). Además, la mayoría de aplicaciones son demasiado genéricas: no adaptan ejercicios ni alimentación al **tipo de cuerpo (morfología)**, al **IMC** ni al contexto real del usuario.
+## Problema que busca resolver
 
-A esto se suma que pocas aplicaciones ofrecen una experiencia **accesible**, con animaciones claras, explicaciones comprensibles y **notificaciones configurables** que no resulten invasivas.
+Las rutinas de entrenamiento genéricas no consideran el equipo real que
+tiene cada usuario en casa (mancuernas, banda elástica, o solo peso
+corporal), ni su morfología o IMC. FitWell adapta rutinas y planes de
+alimentación al equipamiento y condición real de cada usuario, con un
+backend pensado para crecer: empieza como una API en memoria y termina
+como un servicio con persistencia en PostgreSQL, autenticación JWT, control
+de acceso por roles y despliegue en contenedores.
 
-**FitWell** soluciona este problema mediante un sistema integral que:
+## Qué aprendí
 
-* Pregunta qué **equipamiento** tiene el usuario en casa y permite actualizarlo en cualquier momento.
-* Adapta automáticamente las **rutinas de ejercicio** y sugerencias de alimentación según el equipamiento, el IMC y la morfología.
-* Ofrece recomendaciones visuales con **animaciones**, notificaciones personalizables y soporte básico de **accesibilidad** para personas sordas o ciegas.
+- Aplicar los principios **SOLID** a un dominio real y justificar cada uno
+  (`semana-02`).
+- Elegir y documentar un patrón arquitectónico con un ADR formal,
+  evaluando alternativas y trade-offs (`semana-03`).
+- Diseñar una **API REST** con capas separadas (rutas, controladores,
+  dominio) (`semana-04`).
+- Aplicar patrones de diseño clásicos —Factory, Strategy, Observer,
+  Decorator, Singleton— a problemas concretos del dominio (`semana-05`).
+- Migrar a **arquitectura hexagonal** (puertos y adaptadores), separando
+  dominio, aplicación e infraestructura (`semana-06`).
+- Preparar el servicio para la nube: Docker, 12-factor app, variables de
+  entorno, health checks (`semana-07`).
+- Asegurar la API con JWT, RBAC (roles `user`/`admin`), rate limiting,
+  hardening HTTP con Helmet y protección OWASP básica (`semana-08`).
 
-Esto permite que cualquier persona, sin importar su presupuesto o espacio, pueda entrenar y alimentarse de forma coherente, sostenible y realista.
+## Tecnologías usadas
 
----
+| Tecnología | Uso |
+| --- | --- |
+| Node.js + Express | Servidor HTTP |
+| PostgreSQL | Persistencia (semanas 7-8; semanas previas usan repositorios en memoria) |
+| Docker + Docker Compose | Contenerización y despliegue reproducible |
+| JWT + bcrypt (`PasswordService`) | Autenticación y hashing de contraseñas |
+| Zod | Validación de entrada |
+| Helmet, CORS, rate limiting | Hardening HTTP (OWASP) |
+| Node Test Runner | Tests unitarios y de seguridad |
+| [Graphify](https://github.com/Graphify-Labs/graphify) | Grafo de dependencias del código (`graphify-out/`), generado localmente sin LLM |
 
-## 2️⃣ Usuarios Principales
+## Resultados
 
-### Usuario que entrena en casa
+- 8 entregas semanales, cada una una API funcional e independiente
+  (`npm install && npm test` en cada carpeta).
+- Arquitectura final (semana 8): hexagonal, con dominio, casos de uso,
+  puertos/adaptadores, patrones de diseño (`src/patterns/`) y capa HTTP
+  separada — 15 tests de seguridad en verde.
+- Al revisar el código con Graphify detecté carpetas `src/api/` y
+  `src/middleware/` duplicadas y sin usar, que quedaron de la migración a
+  arquitectura hexagonal en las semanas 6-8: las eliminé y verifiqué que
+  los tests de esas 3 semanas siguen pasando (15, 25 y 30 tests
+  respectivamente).
 
-* Registra su equipamiento disponible.
-* Sigue rutinas adaptadas a su morfología y equipo.
-* Registra entrenamientos y comidas.
-* Visualiza su progreso (IMC, medidas, rendimiento).
-* Recibe recomendaciones claras con animaciones.
-* Configura notificaciones según sus preferencias.
+## Estructura
 
-### Usuario con necesidades de accesibilidad
+```
+semanas/
+├── semana-01-planteamiento-inicial/
+├── semana-02-principios-solid/
+├── semana-03-patron-arquitectonico/
+├── semana-04-api-rest-componentes/
+├── semana-05-patrones-diseno/
+├── semana-06-arquitectura-hexagonal/
+├── semana-07-cloud-native-docker/
+└── semana-08-seguridad-jwt-rbac/
+docs/
+└── diagramas/           # Diagrama de arquitectura (Mermaid/SVG)
+```
 
-* Personas sordas o ciegas.
-* Uso de subtítulos en animaciones.
-* Texto alternativo claro.
-* Compatibilidad con lectores de pantalla.
-* Navegación sencilla y comprensible.
+Cada carpeta `semana-NN-tema/` tiene su propio `README.md` con las
+instrucciones exactas para instalarla y ejecutarla.
 
----
+## Cómo iniciar y probar
 
-## 3️⃣ Funcionalidades Principales
+Cada semana es una API independiente (la más completa es `semana-08`):
 
-* Registro e inicio de sesión con perfil completo (datos morfológicos, peso, altura, objetivo y equipamiento disponible).
-* Gestión y actualización del equipamiento del usuario.
-* Catálogo de ejercicios y alimentos con filtros automáticos según equipamiento.
-* Creación de rutinas de entrenamiento y planes de alimentación adaptados a IMC y morfología.
-* Registro diario de entrenamientos y comidas con feedback inmediato.
-* Dashboard con gráficos de progreso, recomendaciones personalizadas y animaciones explicativas.
-* Notificaciones inteligentes configurables (horarios, frecuencia y tipo).
-* Soporte básico de accesibilidad (subtítulos y compatibilidad con screen readers).
+```bash
+cd semanas/semana-08-seguridad-jwt-rbac
+cp .env.example .env
+npm install
+npm run dev      # http://localhost:3000
+npm test         # 15 tests de seguridad
+```
 
----
+Las semanas 7-8 incluyen Docker:
 
-## 4️⃣ Decisiones Iniciales
+```bash
+docker compose up -d
+```
 
-### Metodología de Desarrollo
+## Licencia
 
-**Scrum**
-
-Se eligió Scrum porque permite:
-
-* Entregar valor de forma incremental cada dos semanas.
-* Priorizar funcionalidades esenciales (perfil, equipamiento y catálogo).
-* Adaptar el alcance si partes complejas (como animaciones o personalización avanzada) requieren más tiempo.
-
-### Arquitectura del Sistema
-
-**Arquitectura en N-Capas (Layered Architecture)**
-
-Se eligió este enfoque porque:
-
-* Permite una separación clara entre presentación, lógica de negocio y acceso a datos.
-* Facilita el mantenimiento y la escalabilidad.
-* Es ideal para proyectos académicos y profesionales de tamaño medio.
-
-Capas principales:
-
-* Presentación (Frontend).
-* Lógica de negocio (Servicios).
-* Acceso a datos (Repositorios y entidades).
-
----
-
-## 5️⃣ Tecnologías
-
-### Backend
-
-* **Spring Boot (Java – POO)**
-* **Spring Security** para autenticación y autorización.
-* **Spring Data JPA + Hibernate** para persistencia.
-
-### Base de Datos
-
-* **PostgreSQL**, por su robustez, soporte relacional y compatibilidad con JSON.
-
-### Frontend
-
-* **React + TypeScript** (cliente independiente consumiendo API REST).
-* **TailwindCSS + shadcn/ui** para diseño moderno y consistente.
-* **Framer Motion** para animaciones fluidas.
-* **React Query** para manejo de estado remoto y caché.
-
-### Autenticación
-
-* **JWT (JSON Web Tokens)**.
-
-### Deploy
-
-* Backend: Railway / Render / Fly.io.
-* Frontend: Vercel / Netlify.
-* Base de datos: Railway PostgreSQL o Supabase (plan gratuito).
-
----
-
-## 6️⃣ Alcance Inicial del MVP
-
-* Registro e inicio de sesión.
-* Gestión de perfil y equipamiento.
-* Catálogo básico de ejercicios.
-* Rutinas simples adaptadas al equipo disponible.
-* Dashboard básico de progreso.
-
-Este MVP permitirá validar la idea y sentar las bases para futuras mejoras.
----
-
-## 7️⃣ Diagrama de Arquitectura
-
-```mermaid
-graph TD
-    subgraph Frontend[Frontend - Capa de Presentacion]
-        A[React TypeScript] --> B[TailwindCSS y shadcn ui]
-        A --> C[Framer Motion Animaciones]
-        A --> D[React Query y Context API]
-    end
-
-    subgraph Backend[Backend - Capa API y Logica]
-        E[Spring Boot Java] --> F[Controladores REST]
-        E --> G[Spring Security JWT]
-        E --> H[Servicios Logica de Negocio]
-        H --> I[Spring Data JPA]
-    end
-
-    subgraph Datos[Capa de Acceso a Datos]
-        I --> J[PostgreSQL]
-    end
-
-    Frontend -->|API REST con JWT| Backend
-    Backend -->|JPA Hibernate| Datos
+Proyecto educativo — Bootcamp de Arquitectura de Software, SENA.
